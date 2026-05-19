@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚾ 棒球員分享交流平台 v2 ⚾</title>
+    <!-- 引入 Font Awesome 可愛圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #E8F5E9;
+            --stitch-red: #E53935;
+            --ball-white: #F9F9F9;
+            --dirt-yellow: #FFF8E1;
+            --sand-orange: #FFB300;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --card-radius: 16px;
+            --pop-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+            --btn-shadow: 0 4px 0px #2E7D32;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'HanziPen TC', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--dirt-yellow);
+            background-image: radial-gradient(var(--light-green) 20%, transparent 20%),
+                              radial-gradient(var(--light-green) 20%, transparent 20%);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: var(--text-dark);
+            padding-bottom: 60px;
+        }
+
+        /* --- 導覽列 Navbar --- */
+        .navbar {
+            background-color: var(--primary-green);
+            border-bottom: 6px solid var(--dark-green);
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            text-shadow: 2px 2px 0px var(--dark-green);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background-color: var(--ball-white);
+            color: var(--dark-green);
+            border: 3px solid var(--dark-green);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 3px 0px var(--dark-green);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0px var(--dark-green);
+        }
+
+        .nav-btn.active {
+            background-color: var(--sand-orange);
+            color: white;
+        }
+
+        .nav-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 0px var(--dark-green);
+        }
+
+        .nav-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+        }
+
+        /* --- 主要內容外框 --- */
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        /* --- 通用卡片樣式 --- */
+        .view-section {
+            display: none; /* 預設隱藏，由 JS 控制顯示 */
+            background: white;
+            border: 4px solid var(--text-dark);
+            border-radius: var(--card-radius);
+            padding: 25px;
+            box-shadow: var(--pop-shadow);
+        }
+
+        .view-section.active-view {
+            display: block;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h2 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--dark-green);
+            text-shadow: 1px 1px 0px #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- 表單樣式 (登入/註冊/發文) --- */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 3px solid var(--text-dark);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            background-color: var(--ball-white);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-green);
+        }
+
+        .avatar-preview-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .avatar-preview {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-green);
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn-block {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 12px;
+            border: 3px solid var(--text-dark);
+            margin-top: 10px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-primary {
+            background-color: var(--sand-orange);
+            color: white;
+            box-shadow: 0 4px 0px var(--text-dark);
+        }
+
+        .btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px var(--text-dark);
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: var(--text-dark);
+            box-shadow: 0 4px 0px var(--text-dark);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px var(--text-dark);
+        }
+
+        .switch-auth-mode {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .switch-auth-mode a {
+            color: var(--stitch-red);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        /* --- 個人首頁核心佈局 --- */
+        .profile-card {
+            background: linear-gradient(135deg, var(--light-green), #fff);
+            border: 3px dashed var(--primary-green);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .profile-card-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid var(--dark-green);
+            object-fit: cover;
+        }
+
+        .profile-info h3 {
+            font-size: 20px;
+            color: var(--dark-green);
+        }
+
+        .profile-info p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .big-baseball-btn {
+            background-color: var(--ball-white);
+            border: 4px solid var(--stitch-red);
+            border-radius: 50px;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--stitch-red);
+            cursor: pointer;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 0px var(--stitch-red);
+            transition: all 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .big-baseball-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px var(--stitch-red);
+        }
+
+        /* --- 貼文區與貼文卡片 --- */
+        .posts-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-card {
+            background: white;
+            border: 3px solid var(--text-dark);
+            border-radius: var(--card-radius);
+            padding: 18px;
+            box-shadow: 0 5px 0px var(--text-dark);
+            position: relative;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--text-dark);
+            object-fit: cover;
+        }
+
+        .post-meta .author-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .post-meta .author-id {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .post-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--dark-green);
+        }
+
+        .post-content {
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border: 2px solid var(--text-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        /* 互動區元件 */
+        .post-actions {
+            display: flex;
+            border-top: 2px dashed #eee;
+            padding-top: 10px;
+            gap: 20px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn.liked {
+            color: var(--stitch-red);
+        }
+
+        /* --- 評論留言區塊 --- */
+        .comments-section {
+            background-color: var(--light-green);
+            border: 2px solid var(--text-dark);
+            border-radius: 8px;
+            margin-top: 12px;
+            padding: 12px;
+            display: none; /* 預設收合 */
+        }
+
+        .comments-section.open {
+            display: block;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .comment-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-body strong {
+            color: var(--dark-green);
+            margin-right: 5px;
+        }
+
+        .comment-input-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid var(--text-dark);
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .comment-submit-btn {
+            background-color: var(--primary-green);
+            color: white;
+            border: 2px solid var(--text-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .no-login-comment-tip {
+            font-size: 12px;
+            color: var(--stitch-red);
+            text-align: center;
+            font-style: italic;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        /* --- 九宮格驗證 --- */
+        .captcha-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 250px;
+        }
+        .captcha-cell {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 3px solid var(--text-dark);
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            position: relative;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+        .captcha-cell:active {
+            transform: scale(0.95);
+        }
+        .captcha-cell.selected {
+            border-color: var(--primary-green);
+            background-color: var(--light-green);
+        }
+        .captcha-cell.selected::after {
+            content: '\f058'; /* fa-solid fa-circle-check */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--primary-green);
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 18px;
+            background: white;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 導覽列 -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo" onclick="switchView('feedView')">⚾ 棒球員分享交流平台</a>
+        <div class="nav-menu" id="navMenu">
+            <!-- 由 JS 動態渲染登入狀態按鈕 -->
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- ==================== 1. 登入/註冊頁面 ==================== -->
+        <section id="authView" class="view-section">
+            <h2 id="authTitle">⚾ 歡迎加入球隊！</h2>
+            
+            <!-- 註冊專用的頭貼上傳 -->
+            <div id="registerAvatarGroup" class="form-group" style="display: none;">
+                <label>球員大頭貼</label>
+                <div class="avatar-preview-container">
+                    <img id="avatarPreviewImg" class="avatar-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23F9F9F9' stroke='%23E53935' stroke-width='4'/><path d='M 20 30 Q 50 60 20 70 M 80 30 Q 50 60 80 70' fill='none' stroke='%23E53935' stroke-width='2' stroke-dasharray='3,3'/></svg>" alt="頭貼預覽">
+                </div>
+                <input type="file" id="regAvatar" class="form-control" accept="image/*" onchange="previewAvatar(this)">
+            </div>
+
+            <div class="form-group">
+                <label for="authId">球員 ID (帳號)</label>
+                <input type="text" id="authId" class="form-control" placeholder="請輸入 ID">
+            </div>
+
+            <div id="registerNameGroup" class="form-group" style="display: none;">
+                <label for="regName">球員名稱 (暱稱)</label>
+                <input type="text" id="regName" class="form-control" placeholder="例如：打擊王小明">
+            </div>
+
+            <div class="form-group">
+                <label for="authPassword">安全密碼</label>
+                <input type="password" id="authPassword" class="form-control" placeholder="請輸入密碼">
+            </div>
+
+            <button id="authPrimaryBtn" class="btn-block btn-primary" onclick="handleAuthSubmit()">登入球場</button>
+            
+            <div class="switch-auth-mode" id="authSwitchBox">
+                還沒有帳號嗎？<a href="#" onclick="toggleAuthMode(true)">立即簽約註冊！</a>
+            </div>
+        </section>
+
+
+        <!-- ==================== 1.5 雙重驗證頁面 ==================== -->
+        <section id="tfaView" class="view-section">
+            <h2>🤖 我不是機器人</h2>
+            <p style="text-align: center; margin-bottom: 10px; color: var(--text-dark); font-weight: bold; font-size: 18px;">
+                <span style="color: var(--primary-green); font-size: 22px;">哪些是樂天桃園的球員</span>
+            </p>
+            <div class="captcha-grid" id="captchaGrid">
+                <!-- 九宮格動態生成 -->
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-block btn-secondary" style="flex: 1;" onclick="cancelTfa()">取消登入</button>
+                <button class="btn-block btn-primary" style="flex: 2;" onclick="submitTfa()">驗證並登入</button>
+            </div>
+        </section>
+
+
+        <!-- ==================== 2. 個人首頁 ==================== -->
+        <section id="profileView" class="view-section">
+            <h2>⚾ 我的球員休息室</h2>
+            <div class="profile-card">
+                <img id="myProfileAvatar" class="profile-card-avatar" src="" alt="我的頭貼">
+                <div class="profile-info">
+                    <h3 id="myProfileName">球員名稱</h3>
+                    <p id="myProfileId">ID: baseball_fan</p>
+                </div>
+            </div>
+
+            <!-- 巨大的可愛發文按鈕 -->
+            <div class="big-baseball-btn" onclick="switchView('createPostView')">
+                <span>⚾</span> 點我新增精采貼文 <span>⚾</span>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: var(--dark-green);"><i class="fa-solid fa-box-archive"></i> 我的歷史發文紀錄</h3>
+            <div class="posts-timeline" id="myPostsTimeline">
+                <!-- 個人歷史貼文動態生成 -->
+            </div>
+        </section>
+
+
+        <!-- ==================== 2.5 他人首頁 ==================== -->
+        <section id="otherProfileView" class="view-section">
+            <h2 id="otherProfileTitle">⚾ 某某某的球員休息室</h2>
+            <div class="profile-card">
+                <img id="otherProfileAvatar" class="profile-card-avatar" src="" alt="頭貼">
+                <div class="profile-info">
+                    <h3 id="otherProfileName">球員名稱</h3>
+                    <p id="otherProfileId">ID: </p>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: var(--dark-green);"><i class="fa-solid fa-box-archive"></i> 歷史發文紀錄</h3>
+            <div class="posts-timeline" id="otherPostsTimeline">
+                <!-- 他人歷史貼文動態生成 -->
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-block btn-secondary" style="width: 200px; margin: 0 auto;" onclick="switchView('feedView')">返回分享區</button>
+            </div>
+        </section>
+
+
+        <!-- ==================== 3. 全新發文頁面 ==================== -->
+        <section id="createPostView" class="view-section">
+            <h2>✍️ 紀錄棒球瞬間</h2>
+            
+            <div class="profile-card" style="padding: 10px; margin-bottom: 15px; border-style: solid;">
+                <img id="createPostAvatar" class="profile-card-avatar" style="width: 45px; height: 45px;" src="" alt="頭貼">
+                <div class="profile-info">
+                    <span id="createPostId" style="font-weight: bold;">ID</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="postTitle">發布主題 ⚾</label>
+                <input type="text" id="postTitle" class="form-control" placeholder="例：今天打擊練習手感超好！">
+            </div>
+
+            <div class="form-group">
+                <label for="postContent">分享內容 💬</label>
+                <textarea id="postContent" class="form-control" rows="5" placeholder="今天教練調整了我的打擊姿勢..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="postImage">上傳精彩照片 (自由選擇)</label>
+                <input type="file" id="postImage" class="form-control" accept="image/*">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-block btn-secondary" style="flex: 1;" onclick="switchView('profileView')">取消返回</button>
+                <button class="btn-block btn-primary" style="flex: 2;" onclick="submitPost()">發布貼文 🚀</button>
+            </div>
+        </section>
+
+
+        <!-- ==================== 3.5 編輯發文頁面 ==================== -->
+        <section id="editPostView" class="view-section">
+            <h2>✍️ 編輯棒球貼文</h2>
+            
+            <div class="profile-card" style="padding: 10px; margin-bottom: 15px; border-style: solid;">
+                <img id="editPostAvatar" class="profile-card-avatar" style="width: 45px; height: 45px;" src="" alt="頭貼">
+                <div class="profile-info">
+                    <span id="editPostId" style="font-weight: bold;">ID</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="editPostTitle">發布主題 ⚾</label>
+                <input type="text" id="editPostTitle" class="form-control" placeholder="例：今天打擊練習手感超好！">
+            </div>
+
+            <div class="form-group">
+                <label for="editPostContent">分享內容 💬</label>
+                <textarea id="editPostContent" class="form-control" rows="5" placeholder="今天教練調整了我的打擊姿勢..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="editPostImage">上傳新照片 (若不修改請留空)</label>
+                <input type="file" id="editPostImage" class="form-control" accept="image/*">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-block btn-secondary" style="flex: 1;" onclick="cancelEditPost()">取消返回</button>
+                <button class="btn-block btn-primary" style="flex: 2;" onclick="saveEditPost()">儲存修改 💾</button>
+            </div>
+        </section>
+
+        <!-- ==================== 4. 公共分享區 ==================== -->
+        <section id="feedView" class="view-section">
+            <h2>🌍 全員分享全壘打區</h2>
+            <div class="posts-timeline" id="globalFeedTimeline">
+                <!-- 全域公共貼文動態生成 -->
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- 預設大頭貼圖片 (可愛棒球 SVG Base64 化) ---
+        const DEFAULT_BASE64_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23F9F9F9' stroke='%23E53935' stroke-width='4'/><path d='M 20 30 Q 50 60 20 70 M 80 30 Q 50 60 80 70' fill='none' stroke='%23E53935' stroke-width='2' stroke-dasharray='3,3'/></svg>";
+
+        // --- 預設初始貼文資料 (供首次開啟使用) ---
+        const DEFAULT_POSTS = [
+            {
+                id: "post_sample_1",
+                authorId: "Ohtani_55",
+                authorName: "高校強打阿翔",
+                authorAvatar: DEFAULT_BASE64_AVATAR,
+                title: "今天打擊練習連炸3發全壘打！",
+                content: "今天抓到教練說的重心轉移技巧，特打的時候球球咬到甜蜜點，直接飛過外野記分板！希望週末聯賽可以維持這個火燙手感！⚾🔥",
+                image: "",
+                likes: 18,
+                likedUsers: [],
+                comments: [
+                    { authorName: "王牌投手小選", content: "週末聯賽靠你罩了！", authorAvatar: DEFAULT_BASE64_AVATAR },
+                    { authorName: "鐵壁金手套", content: "強喔，這打擊力量太扯了", authorAvatar: DEFAULT_BASE64_AVATAR }
+                ],
+                timestamp: Date.now() - 3600000 * 3
+            },
+            {
+                id: "post_sample_2",
+                authorId: "Pitcher_Ace",
+                authorName: "火球男阿凱",
+                authorAvatar: DEFAULT_BASE64_AVATAR,
+                title: "新練的變速球終於有點樣子了",
+                content: "之前指叉變速球球速總是掉不下來，今天微調了握法，速差終於出來了。分享一張今天牛棚練投的視角，期待實戰測試！",
+                image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='250' viewBox='0 0 500 250'><rect width='500' height='250' fill='%232E7D32'/><circle cx='250' cy='250' r='180' fill='none' stroke='%23FFF' stroke-width='4'/><polygon points='250,150 320,220 250,250 180,220' fill='%23FFB300'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='24' font-weight='bold'>BULLPEN PRACTICE TODAY</text></svg>",
+                likes: 32,
+                likedUsers: [],
+                comments: [
+                    { authorName: "Ohtani_55", content: "這視角太帥了吧，放馬過來！", authorAvatar: DEFAULT_BASE64_AVATAR }
+                ],
+                timestamp: Date.now() - 3600000 * 20
+            }
+        ];
+
+        // --- 狀態管理物件 ---
+        let state = {
+            currentUser: null,   // 當前登入的使用者資訊
+            pendingUser: null,   // 雙重驗證中暫存的使用者資訊
+            captchaTargetIndices: [], // 九宮格正確答案的索引
+            captchaSelectedIndices: [], // 使用者目前選取的索引
+            isRegisterMode: false, // 登入註冊頁面的狀態切換
+            users: {},           // 所有註冊使用者數據 { id: { name, password, avatar } }
+            posts: []            // 所有貼文數據陣列
+        };
+
+        // --- 初始化載入 ---
+        window.onload = function() {
+            // 從 LocalStorage 還原資料庫
+            if (localStorage.getItem("bb_player_users")) {
+                state.users = JSON.parse(localStorage.getItem("bb_player_users"));
+            } else {
+                // 預設模擬一些測試帳號
+                state.users = {
+                    "Ohtani_55": { name: "高校強打阿翔", password: "123", avatar: DEFAULT_BASE64_AVATAR },
+                    "Pitcher_Ace": { name: "火球男阿凱", password: "123", avatar: DEFAULT_BASE64_AVATAR }
+                };
+                localStorage.setItem("bb_player_users", JSON.stringify(state.users));
+            }
+
+            if (localStorage.getItem("bb_player_posts")) {
+                state.posts = JSON.parse(localStorage.getItem("bb_player_posts"));
+            } else {
+                state.posts = DEFAULT_POSTS;
+                localStorage.setItem("bb_player_posts", JSON.stringify(state.posts));
+            }
+
+            // 檢查 Session 狀態是否有登入過
+            if (sessionStorage.getItem("bb_player_current_user")) {
+                state.currentUser = JSON.parse(sessionStorage.getItem("bb_player_current_user"));
+            }
+
+            // 更新 UI 導覽列與預設渲染公共分享區
+            updateNavbar();
+            renderGlobalFeed();
+            renderMyPosts();
+            switchView("feedView"); // 預設進來是全體分享區
+        };
+
+        // --- 儲存機制常式 ---
+        function savePostsToStorage() {
+            localStorage.setItem("bb_player_posts", JSON.stringify(state.posts));
+        }
+        function saveUsersToStorage() {
+            localStorage.setItem("bb_player_users", JSON.stringify(state.users));
+        }
+
+        // --- 頁面切換控制 (SPA效果) ---
+        function switchView(viewId) {
+            // 隱藏所有區塊
+            document.querySelectorAll(".view-section").forEach(sec => {
+                sec.classList.remove("active-view");
+            });
+
+            // 如果是要進入發文或個人首頁，但沒登入，強制導向登入頁
+            if ((viewId === 'createPostView' || viewId === 'profileView' || viewId === 'editPostView') && !state.currentUser) {
+                alert("⚾ 這區域需要先加入球隊喔！請先進行登入／註冊！");
+                switchView('authView');
+                return;
+            }
+
+            // 進入發文頁時同步填寫發文者的預留資訊
+            if (viewId === 'createPostView' && state.currentUser) {
+                document.getElementById('createPostAvatar').src = state.currentUser.avatar || DEFAULT_BASE64_AVATAR;
+                document.getElementById('createPostId').innerText = `@${state.currentUser.id} (${state.currentUser.name})`;
+                // 清空前一次的發文表單
+                document.getElementById('postTitle').value = "";
+                document.getElementById('postContent').value = "";
+                document.getElementById('postImage').value = "";
+            }
+
+            // 進入個人首頁更新內容
+            if (viewId === 'profileView' && state.currentUser) {
+                document.getElementById('myProfileAvatar').src = state.currentUser.avatar || DEFAULT_BASE64_AVATAR;
+                document.getElementById('myProfileName').innerText = state.currentUser.name;
+                document.getElementById('myProfileId').innerText = `球員ID: @${state.currentUser.id}`;
+                renderMyPosts();
+            }
+
+            // 顯示目標區塊
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add("active-view");
+            }
+
+            // 更新導覽列高亮狀態
+            updateNavbarActive(viewId);
+            
+            // 每次切換畫面捲動到頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 更新導覽列狀態 ---
+        function updateNavbar() {
+            const navMenu = document.getElementById("navMenu");
+            if (state.currentUser) {
+                navMenu.innerHTML = `
+                    <div class="nav-user-info">
+                        <img class="nav-avatar" src="${state.currentUser.avatar || DEFAULT_BASE64_AVATAR}" alt="頭貼">
+                        <span>${state.currentUser.name}</span>
+                    </div>
+                    <button class="nav-btn" id="nav-link-profileView" onclick="switchView('profileView')"><i class="fa-solid fa-user-gear"></i> 個人首頁</button>
+                    <button class="nav-btn" id="nav-link-feedView" onclick="switchView('feedView')"><i class="fa-solid fa-baseball"></i> 分享區</button>
+                    <button class="nav-btn" style="border-color: var(--stitch-red); color: var(--stitch-red);" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+                `;
+            } else {
+                navMenu.innerHTML = `
+                    <button class="nav-btn" id="nav-link-feedView" onclick="switchView('feedView')"><i class="fa-solid fa-baseball"></i> 分享區</button>
+                    <button class="nav-btn active" id="nav-link-authView" onclick="switchView('authView')"><i class="fa-solid fa-user-plus"></i> 登入/註冊</button>
+                `;
+            }
+        }
+
+        function updateNavbarActive(viewId) {
+            document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+            const targetBtn = document.getElementById(`nav-link-${viewId}`);
+            if (targetBtn) {
+                targetBtn.classList.add("active");
+            }
+        }
+
+        // --- 登入與註冊切換控制 ---
+        function toggleAuthMode(toRegister) {
+            state.isRegisterMode = toRegister;
+            const title = document.getElementById("authTitle");
+            const avatarGroup = document.getElementById("registerAvatarGroup");
+            const nameGroup = document.getElementById("registerNameGroup");
+            const primaryBtn = document.getElementById("authPrimaryBtn");
+            const switchBox = document.getElementById("authSwitchBox");
+
+            // 清空輸入欄位
+            document.getElementById("authId").value = "";
+            document.getElementById("authPassword").value = "";
+            document.getElementById("regName").value = "";
+            document.getElementById("regAvatar").value = "";
+            document.getElementById("avatarPreviewImg").src = DEFAULT_BASE64_AVATAR;
+
+            if (toRegister) {
+                title.innerHTML = "📝 簽約新球員 (註冊)";
+                avatarGroup.style.display = "block";
+                nameGroup.style.display = "block";
+                primaryBtn.innerText = "完成註冊，重新登入！";
+                switchBox.innerHTML = `已經是球隊成員？<a href="#" onclick="toggleAuthMode(false)">返回登入</a>`;
+            } else {
+                title.innerHTML = "⚾ 歡迎加入球隊！";
+                avatarGroup.style.display = "none";
+                nameGroup.style.display = "none";
+                primaryBtn.innerText = "登入球場";
+                switchBox.innerHTML = `還沒有帳號嗎？<a href="#" onclick="toggleAuthMode(true)">立即簽約註冊！</a>`;
+            }
+        }
+
+        // 註冊頭貼即時預覽常式
+        let tempAvatarBase64 = DEFAULT_BASE64_AVATAR;
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreviewImg').src = e.target.result;
+                    tempAvatarBase64 = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- 登入/註冊 表單送出處理 ---
+        function handleAuthSubmit() {
+            const id = document.getElementById("authId").value.trim();
+            const password = document.getElementById("authPassword").value.trim();
+
+            if (!id || !password) {
+                alert("⚾ 球員 ID 與安全密碼不能留空唷！");
+                return;
+            }
+
+            if (state.isRegisterMode) {
+                // 【註冊邏輯】
+                const name = document.getElementById("regName").value.trim();
+                if (!name) {
+                    alert("⚾ 請幫自己取一個響亮的球員名稱吧！");
+                    return;
+                }
+                if (state.users[id]) {
+                    alert("❌ 這個 ID 已經被註冊過囉，請換一個！");
+                    return;
+                }
+
+                // 新增球員資料
+                state.users[id] = {
+                    name: name,
+                    password: password,
+                    avatar: tempAvatarBase64
+                };
+                saveUsersToStorage();
+                alert("🎉 註冊成功！請使用您剛剛設定的資料重新登入！");
+                toggleAuthMode(false); // 切回登入畫面供重新登入
+            } else {
+                // 【登入邏輯】
+                const user = state.users[id];
+                if (!user || user.password !== password) {
+                    alert("❌ 密碼錯誤或是球員 ID 不存在，請確認後再試！");
+                    return;
+                }
+
+                // 帳密正確，進入雙重驗證階段
+                state.pendingUser = {
+                    id: id,
+                    name: user.name,
+                    avatar: user.avatar
+                };
+                generateCaptcha();
+                switchView("tfaView");
+            }
+        }
+
+        // --- 雙重驗證 九宮格處理 ---
+        const captchaImagesList = [
+            { src: "images.jpg", isRakuten: true }, // 陳晨威
+            { src: "2025-01-21_17-27-33_867009.jpg", isRakuten: true }, // 林立
+            { src: "fe7ce68110e68ad6399dd5fb4a49f36f.webp", isRakuten: true }, // 陳冠宇
+            { src: "article-6743ebf21f3da.jpg", isRakuten: false }, // 陳傑憲
+            { src: "1635240292_JEuHc.jpg", isRakuten: false },
+            { src: "1773503026_89917.jpg", isRakuten: false },
+            { src: "177838463410642_P20601943.jpg", isRakuten: false },
+            { src: "cover-webp.webp", isRakuten: false },
+            { src: "fbde2bb17159f879ea8cf1bbe49c9359.jpg", isRakuten: false }
+        ];
+
+        function generateCaptcha() {
+            const grid = document.getElementById('captchaGrid');
+            grid.innerHTML = '';
+            state.captchaTargetIndices = [];
+            state.captchaSelectedIndices = [];
+
+            // 複製並打亂圖片陣列
+            const shuffledImages = [...captchaImagesList].sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'captcha-cell';
+                
+                // 設定背景圖片
+                cell.style.backgroundImage = `url('${shuffledImages[i].src}')`;
+                cell.style.backgroundSize = 'cover';
+                cell.style.backgroundPosition = 'center';
+
+                if (shuffledImages[i].isRakuten) {
+                    state.captchaTargetIndices.push(i);
+                }
+
+                cell.onclick = () => toggleCaptchaCell(cell, i);
+                grid.appendChild(cell);
+            }
+        }
+
+        function toggleCaptchaCell(cell, index) {
+            cell.classList.toggle('selected');
+            const idxPos = state.captchaSelectedIndices.indexOf(index);
+            if (idxPos > -1) {
+                state.captchaSelectedIndices.splice(idxPos, 1);
+            } else {
+                state.captchaSelectedIndices.push(index);
+            }
+        }
+
+        function submitTfa() {
+            // 檢查選取的索引是否與正確索引完全吻合
+            const isCorrect = state.captchaTargetIndices.length === state.captchaSelectedIndices.length && 
+                              state.captchaTargetIndices.every(val => state.captchaSelectedIndices.includes(val));
+
+            if (isCorrect) {
+                // 驗證成功
+                state.currentUser = state.pendingUser;
+                state.pendingUser = null;
+                sessionStorage.setItem("bb_player_current_user", JSON.stringify(state.currentUser));
+                updateNavbar();
+                alert(`⚾ 驗證成功！歡迎歸隊，${state.currentUser.name}！自動前往球員休息室...`);
+                switchView("profileView");
+            } else {
+                alert("❌ 驗證失敗，看起來你選錯了！我們換一組圖再試一次。");
+                generateCaptcha();
+            }
+        }
+
+        function cancelTfa() {
+            state.pendingUser = null;
+            switchView("authView");
+        }
+
+        // --- 登出處理 ---
+        function handleLogout() {
+            if (confirm("確認要離開球場休息室嗎？")) {
+                state.currentUser = null;
+                sessionStorage.removeItem("bb_player_current_user");
+                updateNavbar();
+                alert("已成功登出。");
+                switchView("feedView");
+            }
+        }
+
+        // ==================== 發貼文功能 ====================
+        function submitPost() {
+            const title = document.getElementById("postTitle").value.trim();
+            const content = document.getElementById("postContent").value.trim();
+            const fileInput = document.getElementById("postImage");
+
+            if (!title || !content) {
+                alert("⚾ 發布主題與內容都要填寫才能上傳分享區喔！");
+                return;
+            }
+
+            const createNewPostObject = (imgBase64 = "") => {
+                const newPost = {
+                    id: "post_" + Date.now(),
+                    authorId: state.currentUser.id,
+                    authorName: state.currentUser.name,
+                    authorAvatar: state.currentUser.avatar || DEFAULT_BASE64_AVATAR,
+                    title: title,
+                    content: content,
+                    image: imgBase64,
+                    likes: 0,
+                    likedUsers: [],
+                    comments: [],
+                    timestamp: Date.now()
+                };
+
+                state.posts.unshift(newPost); // 置頂到最前面
+                savePostsToStorage();
+                
+                alert("🚀 貼文發布成功！已同步上傳分享區，個人首頁也會留存紀錄！");
+                
+                // 更新畫面並跳轉
+                renderGlobalFeed();
+                renderMyPosts();
+                switchView("feedView");
+            };
+
+            // 判斷有無需要讀取附圖
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    createNewPostObject(e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                createNewPostObject("");
+            }
+        }
+
+        // ==================== 渲染公共分享區 ====================
+        function renderGlobalFeed() {
+            const timeline = document.getElementById("globalFeedTimeline");
+            if (state.posts.length === 0) {
+                timeline.innerHTML = `<p style="text-align:center; color:var(--text-light); padding:20px;">目前分享區空空的，快去發表第一篇貼文吧！⚾</p>`;
+                return;
+            }
+            timeline.innerHTML = state.posts.map(post => generatePostCardHtml(post, 'global')).join('');
+        }
+
+        // ==================== 渲染個人首頁貼文 ====================
+        function renderMyPosts() {
+            const timeline = document.getElementById("myPostsTimeline");
+            if (!state.currentUser) return;
+
+            // 篩選出屬於自己 ID 的貼文
+            const myPosts = state.posts.filter(p => p.authorId === state.currentUser.id);
+            
+            if (myPosts.length === 0) {
+                timeline.innerHTML = `<p style="text-align:center; color:var(--text-light); padding:15px; font-size:14px;">你目前還沒有發布過任何貼文紀錄喔！</p>`;
+                return;
+            }
+            timeline.innerHTML = myPosts.map(post => generatePostCardHtml(post, 'profile')).join('');
+        }
+
+        // ==================== 渲染他人首頁與貼文 ====================
+        function viewUserProfile(userId) {
+            // 如果點到自己，就切換到自己的首頁
+            if (state.currentUser && state.currentUser.id === userId) {
+                switchView('profileView');
+                return;
+            }
+
+            // 尋找這個使用者的資料
+            let targetUser = null;
+            if (state.users && state.users[userId]) {
+                targetUser = {
+                    id: userId,
+                    name: state.users[userId].name,
+                    avatar: state.users[userId].avatar
+                };
+            } else {
+                // 若找不到 (可能是預設假資料) 則從貼文裡找
+                const postByTarget = state.posts.find(p => p.authorId === userId);
+                if (postByTarget) {
+                    targetUser = {
+                        id: userId,
+                        name: postByTarget.authorName,
+                        avatar: postByTarget.authorAvatar
+                    };
+                }
+            }
+
+            if (!targetUser) {
+                alert("找不到這個球員的資料！");
+                return;
+            }
+
+            // 填寫他人首頁資料
+            document.getElementById('otherProfileTitle').innerText = `⚾ ${targetUser.name} 的球員休息室`;
+            document.getElementById('otherProfileAvatar').src = targetUser.avatar || DEFAULT_BASE64_AVATAR;
+            document.getElementById('otherProfileName').innerText = targetUser.name;
+            document.getElementById('otherProfileId').innerText = `球員ID: @${targetUser.id}`;
+
+            // 渲染他人的貼文
+            const timeline = document.getElementById("otherPostsTimeline");
+            const otherPosts = state.posts.filter(p => p.authorId === targetUser.id);
+            
+            if (otherPosts.length === 0) {
+                timeline.innerHTML = `<p style="text-align:center; color:var(--text-light); padding:15px; font-size:14px;">這位球員還沒有發布過任何貼文紀錄喔！</p>`;
+            } else {
+                timeline.innerHTML = otherPosts.map(post => generatePostCardHtml(post, 'otherProfile')).join('');
+            }
+
+            // 切換視圖
+            switchView('otherProfileView');
+        }
+
+        // --- 產生貼文卡片 HTML 樣板常式 ---
+        function generatePostCardHtml(post, prefix) {
+            const isLiked = state.currentUser ? post.likedUsers.includes(state.currentUser.id) : false;
+            const likeClass = isLiked ? 'liked' : '';
+            const imgHtml = post.image ? `<img class="post-image" src="${post.image}" alt="貼文照片">` : '';
+            
+            // 渲染留言清單
+            const commentsHtml = post.comments.map(c => `
+                <div class="comment-item">
+                    <img class="comment-avatar" src="${c.authorAvatar || DEFAULT_BASE64_AVATAR}">
+                    <div class="comment-body">
+                        <strong>${c.authorName}:</strong>${escapeHtml(c.content)}
+                    </div>
+                </div>
+            `).join('');
+
+            // 判斷是否為登入者提供不同的留言輸入框界面
+            let commentInputArea = "";
+            let deleteBtnHtml = "";
+            if (state.currentUser) {
+                // 如果是作者本人，顯示刪除及編輯按鈕
+                if (post.authorId === state.currentUser.id) {
+                    deleteBtnHtml = `
+                        <div style="margin-left: auto; display: flex; gap: 10px;">
+                            <button class="action-btn" style="color: var(--dark-green);" onclick="editPost('${post.id}')"><i class="fa-solid fa-pen"></i> 編輯</button>
+                            <button class="action-btn" style="color: var(--stitch-red);" onclick="deletePost('${post.id}')"><i class="fa-solid fa-trash-can"></i> 刪除</button>
+                        </div>
+                    `;
+                }
+                commentInputArea = `
+                    <div class="comment-input-box">
+                        <input type="text" class="comment-input" id="input-${prefix}-${post.id}" placeholder="發表你對這球的看法...">
+                        <button class="comment-submit-btn" onclick="submitComment('${post.id}', '${prefix}')">送出</button>
+                    </div>
+                `;
+            } else {
+                commentInputArea = `
+                    <div class="no-login-comment-tip" onclick="triggerNoLoginAlert()">
+                        💡 只有登入的球員才能發表評論喔！點此查看或導向登入/註冊。
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="post-card" id="card-${prefix}-${post.id}">
+                    <div class="post-header">
+                        <img class="post-author-avatar" src="${post.authorAvatar || DEFAULT_BASE64_AVATAR}" alt="頭貼" onclick="viewUserProfile('${post.authorId}')" style="cursor: pointer;">
+                        <div class="post-meta">
+                            <div class="author-name" onclick="viewUserProfile('${post.authorId}')" style="cursor: pointer; color: var(--dark-green); text-decoration: underline;">${post.authorName}</div>
+                            <div class="author-id">@${post.authorId} • ${new Date(post.timestamp).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-content">${escapeHtml(post.content)}</div>
+                    ${imgHtml}
+                    
+                    <div class="post-actions">
+                        <button class="action-btn ${likeClass}" onclick="handleLikeClick('${post.id}')">
+                            <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-thumbs-up"></i> 按讚 (<span class="like-count">${post.likes}</span>)
+                        </button>
+                        <button class="action-btn" onclick="toggleCommentsBlock('${post.id}', '${prefix}')">
+                            <i class="fa-regular fa-comment-dots"></i> 評論 (<span class="comment-count">${post.comments.length}</span>)
+                        </button>
+                        ${deleteBtnHtml}
+                    </div>
+
+                    <!-- 留言區區塊 -->
+                    <div class="comments-section" id="comments-box-${prefix}-${post.id}">
+                        <div class="comments-list">
+                            ${commentsHtml || '<p style="font-size:12px; color:#aaa; text-align:center; padding:5px;">目前尚無留言，快來搶沙發！</p>'}
+                        </div>
+                        ${commentInputArea}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== 按讚功能邏輯 ====================
+        function handleLikeClick(postId) {
+            if (!state.currentUser) {
+                alert("⚾ 請先登入才能為這發全壘打點讚喔！⚾");
+                switchView('authView');
+                return;
+            }
+
+            const post = state.posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const userIndex = post.likedUsers.indexOf(state.currentUser.id);
+            if (userIndex > -1) {
+                // 已讚過，取消按讚
+                post.likedUsers.splice(userIndex, 1);
+                post.likes = Math.max(0, post.likes - 1);
+            } else {
+                // 未讚過，加讚
+                post.likedUsers.push(state.currentUser.id);
+                post.likes += 1;
+            }
+
+            savePostsToStorage();
+            
+            // 刷新資料狀態
+            renderGlobalFeed();
+            renderMyPosts();
+        }
+
+        // ==================== 編輯貼文功能 ====================
+        let editingPostId = null;
+
+        function editPost(postId) {
+            if (!state.currentUser) return;
+            const postIndex = state.posts.findIndex(p => p.id === postId);
+            if (postIndex === -1) return;
+            
+            const post = state.posts[postIndex];
+            if (post.authorId !== state.currentUser.id) {
+                alert("您沒有權限編輯這篇貼文！");
+                return;
+            }
+
+            editingPostId = postId;
+            document.getElementById('editPostAvatar').src = state.currentUser.avatar || DEFAULT_BASE64_AVATAR;
+            document.getElementById('editPostId').innerText = `@${state.currentUser.id} (${state.currentUser.name})`;
+            document.getElementById('editPostTitle').value = post.title;
+            document.getElementById('editPostContent').value = post.content;
+            document.getElementById('editPostImage').value = ""; // 清空上傳欄位
+
+            switchView('editPostView');
+        }
+
+        function cancelEditPost() {
+            editingPostId = null;
+            switchView('feedView'); 
+        }
+
+        function saveEditPost() {
+            if (!editingPostId || !state.currentUser) return;
+            const postIndex = state.posts.findIndex(p => p.id === editingPostId);
+            if (postIndex === -1) return;
+
+            const post = state.posts[postIndex];
+            const title = document.getElementById("editPostTitle").value.trim();
+            const content = document.getElementById("editPostContent").value.trim();
+            const fileInput = document.getElementById("editPostImage");
+
+            if (!title || !content) {
+                alert("⚾ 發布主題與內容都要填寫喔！");
+                return;
+            }
+
+            const updatePostObject = (imgBase64) => {
+                post.title = title;
+                post.content = content;
+                if (imgBase64 !== null) {
+                    post.image = imgBase64; // 若有新圖則更新，否則保留舊圖
+                }
+                
+                savePostsToStorage();
+                alert("💾 貼文修改成功！");
+                
+                editingPostId = null;
+                renderGlobalFeed();
+                renderMyPosts();
+                switchView("feedView");
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    updatePostObject(e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                updatePostObject(null); // 表示不更新圖片
+            }
+        }
+
+        // ==================== 刪除貼文功能 ====================
+        function deletePost(postId) {
+            if (!state.currentUser) return;
+
+            const postIndex = state.posts.findIndex(p => p.id === postId);
+            if (postIndex === -1) return;
+
+            // 再次確認是否為作者本人
+            if (state.posts[postIndex].authorId !== state.currentUser.id) {
+                alert("您沒有權限刪除這篇貼文！");
+                return;
+            }
+
+            if (confirm("確定要刪除這篇貼文嗎？刪除後無法恢復喔！")) {
+                state.posts.splice(postIndex, 1);
+                savePostsToStorage();
+                alert("貼文已刪除！");
+                renderGlobalFeed();
+                renderMyPosts();
+            }
+        }
+
+        // ==================== 展開/收合評論區 ====================
+        function toggleCommentsBlock(postId, prefix) {
+            // 未登入者點選評論按鈕：依然可以查看留言，但若未登入嘗試想進行評論互動會提示
+            if (!state.currentUser) {
+                alert("是否有平台帳號？未登入狀態只能查看貼文與留言，即將導向登入/註冊頁面！");
+                switchView('authView');
+                return;
+            }
+
+            const targetBox = document.getElementById(`comments-box-${prefix}-${postId}`);
+            if (targetBox) {
+                targetBox.classList.toggle("open");
+            }
+        }
+
+        // 未登入者在點擊內嵌提示時同樣導向
+        function triggerNoLoginAlert() {
+            alert("是否有平台帳號？請先註冊並重新登入帳號，才能解鎖發表評論功能！");
+            switchView('authView');
+        }
+
+        // ==================== 發表留言送出 ====================
+        function submitComment(postId, prefix) {
+            if (!state.currentUser) return; // 防呆
+
+            const inputElement = document.getElementById(`input-${prefix}-${postId}`);
+            const content = inputElement.value.trim();
+
+            if (!content) {
+                alert("留言欄位不能是空的喔！");
+                return;
+            }
+
+            const post = state.posts.find(p => p.id === postId);
+            if (!post) return;
+
+            // 寫入留言物件
+            post.comments.push({
+                authorName: state.currentUser.name,
+                authorAvatar: state.currentUser.avatar || DEFAULT_BASE64_AVATAR,
+                content: content
+            });
+
+            savePostsToStorage();
+            
+            // 重新刷新保持內容最新
+            renderGlobalFeed();
+            renderMyPosts();
+
+            // 保持原本展開的狀態
+            const targetBoxGlobal = document.getElementById(`comments-box-global-${postId}`);
+            const targetBoxProfile = document.getElementById(`comments-box-profile-${postId}`);
+            if (targetBoxGlobal) targetBoxGlobal.classList.add("open");
+            if (targetBoxProfile) targetBoxProfile.classList.add("open");
+        }
+
+        // 預防 XSS 注入安全工具
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
